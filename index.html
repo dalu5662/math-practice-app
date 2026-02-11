@@ -1,322 +1,90 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>100以内四则运算练习</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="manifest" href="manifest.json">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>数学练习应用 · 图标展示</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: #f9fafc;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #4CAF50;
+            padding-bottom: 0.5rem;
+        }
+        .icon-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            margin-top: 2rem;
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .icon-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .icon-item img {
+            width: 128px;
+            height: 128px;
+            object-fit: contain;
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 16px;
+            border: 1px solid #eee;
+        }
+        .icon-name {
+            font-size: 0.8rem;
+            color: #666;
+            max-width: 160px;
+            word-break: break-all;
+            text-align: center;
+            font-family: monospace;
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <!-- 应用标题 -->
-        <header>
-            <h1><i class="fas fa-calculator"></i> 100以内四则运算练习</h1>
-            <p class="subtitle">挑战你的心算能力！10分钟倒计时</p>
-        </header>
+    <h1>🧮 数学练习应用 · 图标集</h1>
+    <p>以下是从 <code>icons/</code> 文件夹加载的图标（PNG格式，支持遮罩）：</p>
 
-        <!-- 模式选择 -->
-        <div class="control-panel" id="controlPanel">
-            <div class="mode-selection">
-                <h2><i class="fas fa-play-circle"></i> 选择练习模式</h2>
-                <div class="mode-buttons">
-                    <button id="modeAddSub" class="mode-btn active">
-                        <i class="fas fa-plus-minus"></i>
-                        <span>加减混合</span>
-                    </button>
-                    <button id="modeAll" class="mode-btn">
-                        <i class="fas fa-calculator"></i>
-                        <span>加减乘除</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- 开始按钮 -->
-            <div class="start-section">
-                <button id="startBtn" class="start-btn">
-                    <i class="fas fa-play"></i> 开始练习 (10分钟)
-                </button>
-            </div>
-        </div>
-
-        <!-- 练习界面 -->
-        <div class="practice-interface" id="practiceInterface" style="display: none;">
-            <!-- 顶部信息栏 -->
-            <div class="info-bar">
-                <div class="timer">
-                    <i class="fas fa-clock"></i>
-                    <span id="timer">10:00</span>
-                </div>
-                <div class="score">
-                    <i class="fas fa-star"></i>
-                    <span>正确率: <span id="accuracy">0%</span></span>
-                </div>
-                <div class="progress">
-                    <i class="fas fa-list-ol"></i>
-                    <span>题目: <span id="currentQuestion">0</span>/<span id="totalQuestions">0</span></span>
-                </div>
-            </div>
-
-            <!-- 当前题目 -->
-            <div class="current-question">
-                <h2 id="questionText">等待题目生成...</h2>
-                <div class="expression" id="expression"></div>
-            </div>
-
-            <!-- 答案输入 -->
-            <div class="answer-input">
-                <input type="number" id="answerInput" placeholder="输入答案 (0-100)" min="0" max="100" step="1">
-                <button id="submitBtn" class="submit-btn">
-                    <i class="fas fa-check"></i> 提交答案
-                </button>
-                <button id="skipBtn" class="skip-btn">
-                    <i class="fas fa-forward"></i> 跳过
-                </button>
-            </div>
-
-            <!-- 答题状态反馈 -->
-            <div class="feedback" id="feedback"></div>
-
-            <!-- 已做题目列表 -->
-            <div class="question-list">
-                <h3><i class="fas fa-history"></i> 答题记录</h3>
-                <div class="list-container" id="questionList">
-                    <!-- 题目记录会动态添加到这里 -->
-                </div>
-            </div>
-        </div>
-
-        <!-- 结果界面 -->
-        <div class="result-interface" id="resultInterface" style="display: none;">
-            <div class="result-header">
-                <h2><i class="fas fa-flag-checkered"></i> 练习完成！</h2>
-                <div class="final-stats">
-                    <div class="stat-box">
-                        <div class="stat-value" id="finalCorrect">0</div>
-                        <div class="stat-label">正确</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-value" id="finalWrong">0</div>
-                        <div class="stat-label">错误</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-value" id="finalAccuracy">0%</div>
-                        <div class="stat-label">正确率</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-value" id="finalTotal">0</div>
-                        <div class="stat-label">总题数</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 详细结果 -->
-            <div class="detailed-results">
-                <h3><i class="fas fa-chart-bar"></i> 详细报告</h3>
-                <div class="results-list" id="resultsList">
-                    <!-- 详细结果会动态添加到这里 -->
-                </div>
-            </div>
-
-            <!-- 错题本 -->
-            <div class="wrong-questions" id="wrongQuestionsSection">
-                <h3><i class="fas fa-book"></i> 错题本</h3>
-                <div class="wrong-list" id="wrongQuestionsList">
-                    <!-- 错题会动态添加到这里 -->
-                </div>
-            </div>
-
-            <!-- 历史记录 -->
-            <div class="history-section">
-                <h3><i class="fas fa-history"></i> 历史记录</h3>
-                <div class="history-list" id="historyList">
-                    <!-- 历史记录会动态添加到这里 -->
-                </div>
-            </div>
-
-            <!-- 操作按钮 -->
-            <div class="result-actions">
-                <button id="restartBtn" class="action-btn primary">
-                    <i class="fas fa-redo"></i> 重新开始
-                </button>
-                <button id="reviewBtn" class="action-btn secondary">
-                    <i class="fas fa-book-open"></i> 复习错题
-                </button>
-                <button id="practiceWrongBtn" class="action-btn secondary">
-                    <i class="fas fa-redo-alt"></i> 专项练习
-                </button>
-                <button id="downloadBtn" class="action-btn secondary">
-                    <i class="fas fa-download"></i> 保存记录
-                </button>
-            </div>
-        </div>
-
-        <!-- 错题专项练习界面 -->
-        <div class="wrong-practice-interface" id="wrongPracticeInterface" style="display: none;">
-            <div class="wrong-practice-header">
-                <h2><i class="fas fa-book-medical"></i> 错题专项练习</h2>
-                <div class="wrong-stats">
-                    <div class="wrong-stat">
-                        <span class="stat-label">错题总数</span>
-                        <span class="stat-value" id="wrongTotal">0</span>
-                    </div>
-                    <div class="wrong-stat">
-                        <span class="stat-label">未掌握</span>
-                        <span class="stat-value" id="wrongUnmastered">0</span>
-                    </div>
-                    <div class="wrong-stat">
-                        <span class="stat-label">本次正确</span>
-                        <span class="stat-value" id="wrongCorrect">0</span>
-                    </div>
-                    <div class="wrong-stat">
-                        <span class="stat-label">进度</span>
-                        <span class="stat-value" id="wrongProgress">0%</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="wrong-controls">
-                <div class="practice-mode">
-                    <h3><i class="fas fa-cog"></i> 练习模式</h3>
-                    <div class="mode-options">
-                        <button id="modeOriginal" class="mode-option active">
-                            <i class="fas fa-history"></i>
-                            <span>原题重做</span>
-                        </button>
-                        <button id="modeSimilar" class="mode-option">
-                            <i class="fas fa-sync-alt"></i>
-                            <span>举一反三</span>
-                        </button>
-                        <button id="modeMixed" class="mode-option">
-                            <i class="fas fa-random"></i>
-                            <span>混合练习</span>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="difficulty-control">
-                    <h3><i class="fas fa-sliders-h"></i> 难度设置</h3>
-                    <div class="difficulty-slider">
-                        <span>简单</span>
-                        <input type="range" id="difficultyRange" min="1" max="3" value="2" step="1">
-                        <span>困难</span>
-                    </div>
-                    <div class="difficulty-labels">
-                        <span>仅数字变化</span>
-                        <span>数字和运算符变化</span>
-                        <span>完全新题</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 当前错题 -->
-            <div class="current-wrong-question">
-                <div class="wrong-question-info">
-                    <span class="wrong-index" id="wrongQuestionIndex">第1题</span>
-                    <span class="wrong-original" id="wrongOriginalQuestion">原题：25 + ? = 60</span>
-                    <span class="wrong-mastery" id="wrongMasteryLevel">掌握程度：未掌握</span>
-                </div>
-                
-                <div class="wrong-expression">
-                    <h3 id="wrongQuestionText">当前题目</h3>
-                    <div class="expression" id="wrongExpression"></div>
-                </div>
-                
-                <div class="wrong-answer-input">
-                    <input type="number" id="wrongAnswerInput" placeholder="输入答案 (0-100)" min="0" max="100" step="1">
-                    <div class="wrong-action-buttons">
-                        <button id="wrongSubmitBtn" class="submit-btn">
-                            <i class="fas fa-check"></i> 提交答案
-                        </button>
-                        <button id="wrongShowAnswerBtn" class="hint-btn">
-                            <i class="fas fa-lightbulb"></i> 显示答案
-                        </button>
-                        <button id="wrongSkipBtn" class="skip-btn">
-                            <i class="fas fa-forward"></i> 跳过此题
-                        </button>
-                        <button id="wrongMarkMasteredBtn" class="master-btn">
-                            <i class="fas fa-graduation-cap"></i> 标记为掌握
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="wrong-feedback" id="wrongFeedback"></div>
-            </div>
-
-            <!-- 错题列表 -->
-            <div class="wrong-questions-management">
-                <h3><i class="fas fa-list"></i> 错题列表</h3>
-                <div class="management-controls">
-                    <button id="selectAllBtn" class="small-btn">
-                        <i class="fas fa-check-square"></i> 全选
-                    </button>
-                    <button id="deselectAllBtn" class="small-btn">
-                        <i class="fas fa-square"></i> 取消全选
-                    </button>
-                    <button id="deleteSelectedBtn" class="small-btn delete">
-                        <i class="fas fa-trash"></i> 删除选中
-                    </button>
-                    <button id="exportWrongBtn" class="small-btn">
-                        <i class="fas fa-download"></i> 导出错题
-                    </button>
-                </div>
-                
-                <div class="wrong-list-container" id="wrongListContainer">
-                    <!-- 错题列表动态生成 -->
-                </div>
-            </div>
-
-            <!-- 操作按钮 -->
-            <div class="wrong-practice-actions">
-                <button id="backToResultsBtn" class="action-btn secondary">
-                    <i class="fas fa-arrow-left"></i> 返回结果
-                </button>
-                <button id="newSimilarSetBtn" class="action-btn primary">
-                    <i class="fas fa-magic"></i> 生成新题组
-                </button>
-                <button id="finishWrongPracticeBtn" class="action-btn success">
-                    <i class="fas fa-flag-checkered"></i> 完成练习
-                </button>
-            </div>
-        </div>
-
-        <!-- 底部信息 -->
-        <footer>
-            <div class="features">
-                <span><i class="fas fa-check-circle"></i> PWA支持</span>
-                <span><i class="fas fa-mobile-alt"></i> 多设备兼容</span>
-                <span><i class="fas fa-brain"></i> 心算训练</span>
-                <span><i class="fas fa-book-medical"></i> 错题强化</span>
-            </div>
-            <p class="copyright">© 2024 四则运算练习应用 - 错题强化版</p>
-        </footer>
+    <div class="icon-grid" id="iconContainer">
+        <!-- 图标由 JavaScript 动态加载 -->
     </div>
 
-    <!-- 安装PWA提示 -->
-    <div id="installPrompt" class="install-prompt" style="display: none;">
-        <div class="prompt-content">
-            <i class="fas fa-download"></i>
-            <span>添加到主屏幕以获得最佳体验</span>
-            <button id="installBtn">安装</button>
-            <button id="dismissInstall">稍后</button>
-        </div>
-    </div>
-
-    <script src="app.js"></script>
-    <!-- PWA Service Worker 注册 -->
     <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('service-worker.js')
-                    .then(registration => {
-                        console.log('ServiceWorker 注册成功:', registration.scope);
-                    })
-                    .catch(error => {
-                        console.log('ServiceWorker 注册失败:', error);
-                    });
-            });
-        }
+        // ✅ 完全匹配你刚刚上传的两个文件
+        const iconFiles = [
+            "manifest-icon-192.maskable.png",
+            "manifest-icon-512.maskable.png"
+        ];
+
+        const container = document.getElementById('iconContainer');
+        
+        iconFiles.forEach(filename => {
+            const item = document.createElement('div');
+            item.className = 'icon-item';
+            
+            const img = document.createElement('img');
+            img.src = `icons/${filename}`;
+            img.alt = filename;
+            
+            const nameSpan = document.createElement('span');
+            nameSpan.className = 'icon-name';
+            nameSpan.textContent = filename;
+            
+            item.appendChild(img);
+            item.appendChild(nameSpan);
+            container.appendChild(item);
+        });
     </script>
 </body>
 </html>
