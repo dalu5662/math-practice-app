@@ -2,87 +2,646 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>数学练习应用 · 图标展示</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>数学练习 · 100以内四则运算</title>
+    <meta name="description" content="10分钟100以内加减乘除填空练习，自动记录错题，PWA可安装">
+    <meta name="theme-color" content="#4CAF50">
+    <link rel="manifest" href="data:application/manifest+json,{
+        &quot;name&quot;: &quot;100以内数学练习&quot;,
+        &quot;short_name&quot;: &quot;数学练习&quot;,
+        &quot;start_url&quot;: &quot;.&quot;,
+        &quot;display&quot;: &quot;standalone&quot;,
+        &quot;background_color&quot;: &quot;#f9fafc&quot;,
+        &quot;theme_color&quot;: &quot;#4CAF50&quot;,
+        &quot;icons&quot;: [
+            {
+                &quot;src&quot;: &quot;icons/manifest-icon-192.maskable.png&quot;,
+                &quot;sizes&quot;: &quot;192x192&quot;,
+                &quot;type&quot;: &quot;image/png&quot;,
+                &quot;purpose&quot;: &quot;any maskable&quot;
+            },
+            {
+                &quot;src&quot;: &quot;icons/manifest-icon-512.maskable.png&quot;,
+                &quot;sizes&quot;: &quot;512x512&quot;,
+                &quot;type&quot;: &quot;image/png&quot;,
+                &quot;purpose&quot;: &quot;any maskable&quot;
+            }
+        ]
+    }">
     <style>
+        * {
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
         body {
-            font-family: system-ui, -apple-system, sans-serif;
+            background: #f0f2f5;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 12px;
+        }
+        .app {
             max-width: 800px;
-            margin: 0 auto;
-            padding: 2rem;
-            background: #f9fafc;
+            width: 100%;
+            background: white;
+            border-radius: 32px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.05);
+            padding: 24px;
+            margin: 16px auto;
         }
         h1 {
-            color: #2c3e50;
-            border-bottom: 3px solid #4CAF50;
-            padding-bottom: 0.5rem;
-        }
-        .icon-grid {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin: 0 0 8px 0;
             display: flex;
-            flex-wrap: wrap;
-            gap: 2rem;
-            margin-top: 2rem;
-            background: white;
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        }
-        .icon-item {
-            display: flex;
-            flex-direction: column;
             align-items: center;
-            gap: 0.5rem;
+            gap: 8px;
         }
-        .icon-item img {
-            width: 128px;
-            height: 128px;
-            object-fit: contain;
-            background: #f8f9fa;
-            padding: 1rem;
-            border-radius: 16px;
-            border: 1px solid #eee;
+        .timer-section {
+            background: linear-gradient(145deg, #1e293b, #0f172a);
+            color: white;
+            padding: 20px;
+            border-radius: 24px;
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
         }
-        .icon-name {
-            font-size: 0.8rem;
-            color: #666;
-            max-width: 160px;
-            word-break: break-all;
-            text-align: center;
+        .timer {
+            font-size: 3rem;
             font-family: monospace;
+            font-weight: 700;
+            letter-spacing: 4px;
+            color: #fbbf24;
+        }
+        .mode-selector {
+            background: rgba(255,255,255,0.1);
+            padding: 12px;
+            border-radius: 20px;
+            display: flex;
+            gap: 12px;
+        }
+        .mode-btn {
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 40px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .mode-btn.active {
+            background: #4CAF50;
+            border-color: #4CAF50;
+            color: white;
+        }
+        .question-area {
+            background: #f8fafc;
+            border-radius: 24px;
+            padding: 32px 24px;
+            text-align: center;
+            margin-bottom: 24px;
+            border: 1px solid #e2e8f0;
+        }
+        .equation {
+            font-size: 3.2rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 24px;
+            word-break: break-word;
+        }
+        .answer-input-area {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        #answer {
+            font-size: 2rem;
+            width: 160px;
+            text-align: center;
+            padding: 12px;
+            border: 2px solid #cbd5e1;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+        .btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 32px;
+            font-size: 1.4rem;
+            border-radius: 40px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.1s;
+            box-shadow: 0 4px 0 #2d6a4f;
+        }
+        .btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #2d6a4f;
+        }
+        .btn:disabled {
+            opacity: 0.5;
+            transform: none;
+            box-shadow: 0 4px 0 #2d6a4f;
+        }
+        .stats {
+            background: white;
+            border-radius: 20px;
+            padding: 16px;
+            margin-bottom: 24px;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-around;
+            font-weight: 500;
+        }
+        .history-log {
+            background: #f1f5f9;
+            border-radius: 20px;
+            padding: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-size: 0.95rem;
+            border: 1px solid #cbd5e1;
+        }
+        .history-entry {
+            padding: 8px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+        }
+        .wrong-bank {
+            margin-top: 16px;
+            background: #fff7ed;
+            border-radius: 20px;
+            padding: 16px;
+            border-left: 6px solid #f97316;
+        }
+        .clear-btn {
+            background: #64748b;
+            color: white;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 40px;
+            cursor: pointer;
+        }
+        @media (max-width: 600px) {
+            .app { padding: 16px; }
+            .equation { font-size: 2.4rem; }
+            #answer { width: 120px; font-size: 1.8rem; }
+            .btn { padding: 10px 24px; font-size: 1.2rem; }
         }
     </style>
 </head>
 <body>
-    <h1>🧮 数学练习应用 · 图标集</h1>
-    <p>以下是从 <code>icons/</code> 文件夹加载的图标：</p>
+    <div class="app" id="app">
+        <h1>🧮 100以内数学练习</h1>
+        
+        <!-- 计时区 -->
+        <div class="timer-section">
+            <span class="timer" id="timerDisplay">10:00</span>
+            <div class="mode-selector" id="modeGroup">
+                <button id="mode1" class="mode-btn active">➕➖ 加减</button>
+                <button id="mode2" class="mode-btn">✖️➗ 加减乘除</button>
+            </div>
+        </div>
 
-    <div class="icon-grid" id="iconContainer"></div>
+        <!-- 题目区 -->
+        <div class="question-area">
+            <div class="equation" id="equation">准备就绪</div>
+            <div class="answer-input-area">
+                <input type="number" id="answer" placeholder="输入答案" value="">
+                <button class="btn" id="submitBtn">✓ 提交</button>
+            </div>
+            <p style="color:#64748b; margin-top:16px;" id="feedback"></p>
+        </div>
+
+        <!-- 实时统计 -->
+        <div class="stats">
+            <span>✅ 正确: <span id="correctCount">0</span></span>
+            <span>❌ 错误: <span id="wrongCount">0</span></span>
+            <span>📋 正确率: <span id="accuracy">0</span>%</span>
+        </div>
+
+        <!-- 本次练习记录 -->
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h3>📝 本次记录</h3>
+            <button id="resetBtn" class="clear-btn" style="background:#ef4444;">重置练习</button>
+        </div>
+        <div class="history-log" id="historyLog"></div>
+
+        <!-- 错题本 -->
+        <div class="wrong-bank" id="wrongBankSection">
+            <div style="display:flex; justify-content:space-between;">
+                <h3 style="margin:0; color:#b45309;">📕 错题本</h3>
+                <button id="clearWrongBtn" class="clear-btn" style="background:#f97316;">清空错题</button>
+            </div>
+            <div id="wrongList" style="margin-top:12px; min-height:40px;"></div>
+        </div>
+    </div>
 
     <script>
-        // ✅ 完全匹配你已上传的两个图标文件
-        const iconFiles = [
-            "manifest-icon-192.maskable.png",
-            "manifest-icon-512.maskable.png"
-        ];
+        (function(){
+            "use strict";
 
-        const container = document.getElementById('iconContainer');
-        
-        iconFiles.forEach(filename => {
-            const item = document.createElement('div');
-            item.className = 'icon-item';
-            
-            const img = document.createElement('img');
-            img.src = `icons/${filename}`;
-            img.alt = filename;
-            
-            const nameSpan = document.createElement('span');
-            nameSpan.className = 'icon-name';
-            nameSpan.textContent = filename;
-            
-            item.appendChild(img);
-            item.appendChild(nameSpan);
-            container.appendChild(item);
-        });
+            // ---------- 全局状态 ----------
+            let timeLeft = 600;            // 10分钟 = 600秒
+            let timerInterval = null;
+            let isRunning = false;
+            let mode = 'addsub';           // 'addsub' 或 'all'
+
+            // 题目相关
+            let currentQuestion = null;    // { equationText, answer, type, a, b, op, blankPos }
+            let questionBuffer = [];       // 预生成队列，并行缓冲
+
+            // 统计
+            let history = [];             // 本次练习记录 { equation, userAnswer, correct, timestamp }
+            let correct = 0, wrong = 0;
+
+            // 错题本 (持久化)
+            let wrongBank = [];
+
+            // ---------- 初始化加载错题本 ----------
+            function loadWrongBank() {
+                try {
+                    const stored = localStorage.getItem('math_practice_wrong_bank');
+                    if (stored) wrongBank = JSON.parse(stored);
+                } catch(e) {}
+                renderWrongBank();
+            }
+            function saveWrongBank() {
+                localStorage.setItem('math_practice_wrong_bank', JSON.stringify(wrongBank));
+                renderWrongBank();
+            }
+
+            // ---------- 生成随机整数 0~100 ----------
+            function rand(max = 100) {
+                return Math.floor(Math.random() * (max + 1));
+            }
+
+            // ---------- 随机运算符 ----------
+            function getOperator(modeType, allowMulDiv = false) {
+                if (!allowMulDiv) {
+                    return Math.random() < 0.5 ? '+' : '-';
+                } else {
+                    const r = Math.random();
+                    if (r < 0.25) return '+';
+                    if (r < 0.5) return '-';
+                    if (r < 0.75) return '×';
+                    return '÷';
+                }
+            }
+
+            // ---------- 计算 (确保正整数结果且≤100) ----------
+            function safeCalculate(a, b, op) {
+                if (op === '+') {
+                    let val = a + b;
+                    return val <= 100 ? val : null;
+                }
+                if (op === '-') {
+                    let val = a - b;
+                    return (val >= 0 && val <= 100) ? val : null;
+                }
+                if (op === '×') {
+                    let val = a * b;
+                    return val <= 100 ? val : null;
+                }
+                if (op === '÷') {
+                    if (b === 0) return null;
+                    if (a % b !== 0) return null;
+                    let val = a / b;
+                    return val <= 100 ? val : null;
+                }
+                return null;
+            }
+
+            // ---------- 生成一道有效题目 ----------
+            function generateSingleQuestion(allowMulDiv) {
+                const maxAttempts = 300;
+                for (let attempt = 0; attempt < maxAttempts; attempt++) {
+                    // 随机决定算式形式：0 = a op b = ? , 1 = ? op b = c , 2 = a op ? = c
+                    const blankType = Math.floor(Math.random() * 3);
+                    const op = getOperator(mode, allowMulDiv);
+
+                    if (blankType === 0) {
+                        let a = rand(100);
+                        let b = rand(100);
+                        let result = safeCalculate(a, b, op);
+                        if (result !== null) {
+                            return {
+                                equationText: `${a} ${op} ${b} = ?`,
+                                answer: result,
+                                type: 'normal',
+                                a, b, op, blankPos: 'right',
+                                display: `${a} ${op} ${b} = ?`
+                            };
+                        }
+                    } else if (blankType === 1) {
+                        // ? op b = c
+                        let b = rand(100);
+                        let c = rand(100);
+                        let a = null;
+                        if (op === '+') a = c - b;
+                        else if (op === '-') a = c + b;
+                        else if (op === '×') { if (b === 0 || c % b !== 0) continue; a = c / b; }
+                        else if (op === '÷') { if (c === 0) continue; a = c * b; } 
+                        if (a !== null && Number.isInteger(a) && a >= 0 && a <= 100) {
+                            return {
+                                equationText: `? ${op} ${b} = ${c}`,
+                                answer: a,
+                                type: 'blankLeft',
+                                a, b, op, blankPos: 'left',
+                                display: `? ${op} ${b} = ${c}`
+                            };
+                        }
+                    } else {
+                        // a op ? = c
+                        let a = rand(100);
+                        let c = rand(100);
+                        let b = null;
+                        if (op === '+') b = c - a;
+                        else if (op === '-') b = a - c;
+                        else if (op === '×') { if (a === 0 || c % a !== 0) continue; b = c / a; }
+                        else if (op === '÷') { if (c === 0) continue; b = a / c; } 
+                        if (b !== null && Number.isInteger(b) && b >= 0 && b <= 100) {
+                            return {
+                                equationText: `${a} ${op} ? = ${c}`,
+                                answer: b,
+                                type: 'blankMid',
+                                a, b, op, blankPos: 'mid',
+                                display: `${a} ${op} ? = ${c}`
+                            };
+                        }
+                    }
+                }
+                // 保底题目
+                return {
+                    equationText: `1 + 1 = ?`,
+                    answer: 2,
+                    type: 'normal',
+                    a:1, b:1, op:'+', blankPos:'right',
+                    display: `1 + 1 = ?`
+                };
+            }
+
+            // ---------- 并行填充缓冲区 (每次至少2题待用) ----------
+            function refillBuffer() {
+                const allowMulDiv = (mode === 'all');
+                while (questionBuffer.length < 5) {
+                    questionBuffer.push(generateSingleQuestion(allowMulDiv));
+                }
+            }
+
+            // ---------- 从缓冲区取出题目，并立即触发后台填充 ----------
+            function fetchNextQuestion() {
+                if (questionBuffer.length === 0) {
+                    refillBuffer();
+                }
+                const q = questionBuffer.shift();
+                // 异步填充
+                setTimeout(() => refillBuffer(), 0);
+                return q;
+            }
+
+            // ---------- 更新界面到新题目 ----------
+            function displayNewQuestion() {
+                if (!isRunning) return;
+                currentQuestion = fetchNextQuestion();
+                document.getElementById('equation').innerText = currentQuestion.display || currentQuestion.equationText;
+                document.getElementById('answer').value = '';
+                document.getElementById('answer').focus();
+                document.getElementById('feedback').innerText = '';
+            }
+
+            // ---------- 计时器 ----------
+            function startTimer() {
+                if (timerInterval) clearInterval(timerInterval);
+                isRunning = true;
+                timerInterval = setInterval(() => {
+                    if (timeLeft <= 0) {
+                        endPractice();
+                        return;
+                    }
+                    timeLeft--;
+                    updateTimerDisplay();
+                }, 1000);
+            }
+
+            function updateTimerDisplay() {
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                document.getElementById('timerDisplay').innerText = 
+                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }
+
+            function endPractice() {
+                isRunning = false;
+                if (timerInterval) clearInterval(timerInterval);
+                timerInterval = null;
+                document.getElementById('equation').innerText = '练习结束！';
+                document.getElementById('submitBtn').disabled = true;
+                document.getElementById('answer').disabled = true;
+            }
+
+            // ---------- 提交答案处理 ----------
+            function handleSubmit() {
+                if (!isRunning) {
+                    alert('计时已结束或未开始，请点击重置开始练习');
+                    return;
+                }
+                if (!currentQuestion) {
+                    displayNewQuestion();
+                    return;
+                }
+                const answerInput = document.getElementById('answer');
+                const userAns = parseInt(answerInput.value, 10);
+                if (isNaN(userAns)) {
+                    alert('请输入数字');
+                    return;
+                }
+
+                const isCorrect = (userAns === currentQuestion.answer);
+                const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+                // 更新统计
+                if (isCorrect) correct++;
+                else wrong++;
+
+                // 记录本次练习历史
+                history.push({
+                    equation: currentQuestion.display || currentQuestion.equationText,
+                    userAnswer: userAns,
+                    correct: isCorrect,
+                    timestamp
+                });
+
+                // 如果是错题，加入错题本（去重，保留最近错误）
+                if (!isCorrect) {
+                    const wrongEntry = {
+                        equation: currentQuestion.display || currentQuestion.equationText,
+                        correctAnswer: currentQuestion.answer,
+                        lastWrong: timestamp
+                    };
+                    // 简单去重：如果相同算式已存在，更新
+                    const existingIndex = wrongBank.findIndex(w => w.equation === wrongEntry.equation);
+                    if (existingIndex !== -1) wrongBank.splice(existingIndex, 1);
+                    wrongBank.unshift(wrongEntry);
+                    if (wrongBank.length > 20) wrongBank.pop();
+                    saveWrongBank();
+                }
+
+                // 更新UI统计
+                document.getElementById('correctCount').innerText = correct;
+                document.getElementById('wrongCount').innerText = wrong;
+                const total = correct + wrong;
+                document.getElementById('accuracy').innerText = total ? Math.round((correct / total)*100) : 0;
+
+                // 反馈
+                document.getElementById('feedback').innerHTML = isCorrect 
+                    ? '✅ 正确！' 
+                    : `❌ 错误，正确答案是 ${currentQuestion.answer}`;
+
+                // 渲染历史记录
+                renderHistory();
+
+                // 下一题
+                displayNewQuestion();
+            }
+
+            function renderHistory() {
+                const logDiv = document.getElementById('historyLog');
+                if (history.length === 0) {
+                    logDiv.innerHTML = '<div style="color:#94a3b8;">暂无记录</div>';
+                    return;
+                }
+                let html = '';
+                history.slice(-15).reverse().forEach(h => {
+                    html += `<div class="history-entry">
+                        <span>${h.equation} = ${h.userAnswer}</span>
+                        <span style="color:${h.correct ? '#2e7d32' : '#c62828'}">${h.correct ? '✓' : '✗'}</span>
+                    </div>`;
+                });
+                logDiv.innerHTML = html;
+            }
+
+            function renderWrongBank() {
+                const listDiv = document.getElementById('wrongList');
+                if (wrongBank.length === 0) {
+                    listDiv.innerHTML = '<span style="color:#92400e;">✨ 还没有错题，继续保持</span>';
+                    return;
+                }
+                let html = '';
+                wrongBank.slice(0, 10).forEach(w => {
+                    html += `<div style="padding:6px 0; border-bottom:1px dashed #fed7aa;">
+                        <span style="font-weight:500;">${w.equation}</span> = ${w.correctAnswer}
+                    </div>`;
+                });
+                listDiv.innerHTML = html;
+            }
+
+            // ---------- 重置练习 (开始新的一轮) ----------
+            function resetPractice() {
+                // 停止计时
+                if (timerInterval) clearInterval(timerInterval);
+                timerInterval = null;
+                isRunning = false;
+                // 重置状态
+                timeLeft = 600;
+                updateTimerDisplay();
+                correct = 0; wrong = 0;
+                history = [];
+                document.getElementById('correctCount').innerText = '0';
+                document.getElementById('wrongCount').innerText = '0';
+                document.getElementById('accuracy').innerText = '0';
+                document.getElementById('feedback').innerHTML = '';
+                document.getElementById('submitBtn').disabled = false;
+                document.getElementById('answer').disabled = false;
+                
+                // 清空缓冲区，重新预生成
+                questionBuffer = [];
+                refillBuffer();
+                // 显示第一题
+                isRunning = true;
+                displayNewQuestion();
+                // 启动计时
+                startTimer();
+            }
+
+            // ---------- 切换模式 ----------
+            function setMode(newMode) {
+                mode = newMode;
+                document.getElementById('mode1').classList.toggle('active', mode === 'addsub');
+                document.getElementById('mode2').classList.toggle('active', mode === 'all');
+                // 重置练习以应用新模式
+                resetPractice();
+            }
+
+            // ---------- 清空错题本 ----------
+            function clearWrongBank() {
+                wrongBank = [];
+                saveWrongBank();
+                renderWrongBank();
+            }
+
+            // ---------- 注册Service Worker (PWA) ----------
+            function registerSW() {
+                if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.register('./sw.js').catch(e => console.log('SW注册失败(可忽略):', e));
+                }
+            }
+
+            // 简单兜底Service Worker (如果不存在则动态创建)
+            function installFallbackSW() {
+                if (!('serviceWorker' in navigator)) return;
+                const swScript = `
+                self.addEventListener('install', (e) => e.waitUntil(self.skipWaiting()));
+                self.addEventListener('activate', (e) => e.waitUntil(self.clients.claim()));
+                self.addEventListener('fetch', (e) => e.respondWith(fetch(e.request)));`;
+                const blob = new Blob([swScript], { type: 'application/javascript' });
+                const url = URL.createObjectURL(blob);
+                navigator.serviceWorker.register(url).catch(() => {});
+            }
+
+            // ---------- 初始化事件绑定 ----------
+            function init() {
+                loadWrongBank();
+                // 预填缓冲区
+                refillBuffer();
+                // 默认激活模式并开始
+                isRunning = true;
+                displayNewQuestion();
+                startTimer();
+
+                // 绑定提交
+                document.getElementById('submitBtn').addEventListener('click', handleSubmit);
+                document.getElementById('answer').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') handleSubmit();
+                });
+
+                // 模式切换
+                document.getElementById('mode1').addEventListener('click', () => setMode('addsub'));
+                document.getElementById('mode2').addEventListener('click', () => setMode('all'));
+
+                // 重置按钮
+                document.getElementById('resetBtn').addEventListener('click', resetPractice);
+
+                // 清空错题
+                document.getElementById('clearWrongBtn').addEventListener('click', clearWrongBank);
+
+                // PWA：注册Service Worker
+                if ('serviceWorker' in navigator) {
+                    installFallbackSW();
+                }
+            }
+
+            window.onload = init;
+        })();
     </script>
 </body>
 </html>
