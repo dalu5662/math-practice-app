@@ -2,10 +2,24 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>数学练习 · 100以内四则运算</title>
-    <meta name="description" content="10分钟100以内加减乘除填空练习，自动记录错题，PWA可安装">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>100以内数学练习 · 四则运算</title>
+    
+    <!-- ✅ iOS 专用图标配置（直接调用你的 icons 文件夹） -->
+    <link rel="apple-touch-icon" href="icons/manifest-icon-192.maskable.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="icons/manifest-icon-192.maskable.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="icons/manifest-icon-192.maskable.png">
+    <link rel="apple-touch-icon" sizes="167x167" href="icons/manifest-icon-192.maskable.png">
+    
+    <!-- ✅ iOS 启动画面（可选） -->
+    <link rel="apple-touch-startup-image" href="icons/manifest-icon-512.maskable.png">
+    
+    <!-- ✅ Safari 顶部栏主题色 -->
     <meta name="theme-color" content="#4CAF50">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <!-- ✅ PWA Manifest（已包含你的两个图标） -->
     <link rel="manifest" href="data:application/manifest+json,{
         &quot;name&quot;: &quot;100以内数学练习&quot;,
         &quot;short_name&quot;: &quot;数学练习&quot;,
@@ -28,10 +42,13 @@
             }
         ]
     }">
+    
     <style>
+        /* ⚠️ 原有 CSS 代码保持不变（你现在的完整样式） */
         * {
             box-sizing: border-box;
             font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
         }
         body {
             background: #f0f2f5;
@@ -94,6 +111,7 @@
             font-weight: 500;
             cursor: pointer;
             transition: all 0.2s;
+            font-size: 1rem;
         }
         .mode-btn.active {
             background: #4CAF50;
@@ -129,6 +147,8 @@
             border: 2px solid #cbd5e1;
             border-radius: 20px;
             font-weight: 600;
+            -webkit-appearance: none;
+            appearance: none;
         }
         .btn {
             background: #4CAF50;
@@ -141,6 +161,8 @@
             cursor: pointer;
             transition: 0.1s;
             box-shadow: 0 4px 0 #2d6a4f;
+            -webkit-appearance: none;
+            appearance: none;
         }
         .btn:active {
             transform: translateY(4px);
@@ -190,12 +212,16 @@
             padding: 6px 16px;
             border-radius: 40px;
             cursor: pointer;
+            -webkit-appearance: none;
+            appearance: none;
         }
         @media (max-width: 600px) {
             .app { padding: 16px; }
             .equation { font-size: 2.4rem; }
             #answer { width: 120px; font-size: 1.8rem; }
             .btn { padding: 10px 24px; font-size: 1.2rem; }
+            .timer { font-size: 2.4rem; }
+            .mode-btn { padding: 6px 12px; font-size: 0.9rem; }
         }
     </style>
 </head>
@@ -203,7 +229,6 @@
     <div class="app" id="app">
         <h1>🧮 100以内数学练习</h1>
         
-        <!-- 计时区 -->
         <div class="timer-section">
             <span class="timer" id="timerDisplay">10:00</span>
             <div class="mode-selector" id="modeGroup">
@@ -212,31 +237,27 @@
             </div>
         </div>
 
-        <!-- 题目区 -->
         <div class="question-area">
             <div class="equation" id="equation">准备就绪</div>
             <div class="answer-input-area">
-                <input type="number" id="answer" placeholder="输入答案" value="">
+                <input type="number" id="answer" placeholder="输入答案" value="" inputmode="numeric" pattern="[0-9]*">
                 <button class="btn" id="submitBtn">✓ 提交</button>
             </div>
             <p style="color:#64748b; margin-top:16px;" id="feedback"></p>
         </div>
 
-        <!-- 实时统计 -->
         <div class="stats">
             <span>✅ 正确: <span id="correctCount">0</span></span>
             <span>❌ 错误: <span id="wrongCount">0</span></span>
             <span>📋 正确率: <span id="accuracy">0</span>%</span>
         </div>
 
-        <!-- 本次练习记录 -->
         <div style="display:flex; justify-content:space-between; align-items:center;">
             <h3>📝 本次记录</h3>
             <button id="resetBtn" class="clear-btn" style="background:#ef4444;">重置练习</button>
         </div>
         <div class="history-log" id="historyLog"></div>
 
-        <!-- 错题本 -->
         <div class="wrong-bank" id="wrongBankSection">
             <div style="display:flex; justify-content:space-between;">
                 <h3 style="margin:0; color:#b45309;">📕 错题本</h3>
@@ -251,23 +272,19 @@
             "use strict";
 
             // ---------- 全局状态 ----------
-            let timeLeft = 600;            // 10分钟 = 600秒
+            let timeLeft = 600;
             let timerInterval = null;
             let isRunning = false;
-            let mode = 'addsub';           // 'addsub' 或 'all'
+            let mode = 'addsub';
 
-            // 题目相关
-            let currentQuestion = null;    // { equationText, answer, type, a, b, op, blankPos }
-            let questionBuffer = [];       // 预生成队列，并行缓冲
+            let currentQuestion = null;
+            let questionBuffer = [];
 
-            // 统计
-            let history = [];             // 本次练习记录 { equation, userAnswer, correct, timestamp }
+            let history = [];
             let correct = 0, wrong = 0;
-
-            // 错题本 (持久化)
             let wrongBank = [];
 
-            // ---------- 初始化加载错题本 ----------
+            // ---------- 加载/保存错题本 ----------
             function loadWrongBank() {
                 try {
                     const stored = localStorage.getItem('math_practice_wrong_bank');
@@ -280,12 +297,10 @@
                 renderWrongBank();
             }
 
-            // ---------- 生成随机整数 0~100 ----------
             function rand(max = 100) {
                 return Math.floor(Math.random() * (max + 1));
             }
 
-            // ---------- 随机运算符 ----------
             function getOperator(modeType, allowMulDiv = false) {
                 if (!allowMulDiv) {
                     return Math.random() < 0.5 ? '+' : '-';
@@ -298,7 +313,6 @@
                 }
             }
 
-            // ---------- 计算 (确保正整数结果且≤100) ----------
             function safeCalculate(a, b, op) {
                 if (op === '+') {
                     let val = a + b;
@@ -321,11 +335,9 @@
                 return null;
             }
 
-            // ---------- 生成一道有效题目 ----------
             function generateSingleQuestion(allowMulDiv) {
                 const maxAttempts = 300;
                 for (let attempt = 0; attempt < maxAttempts; attempt++) {
-                    // 随机决定算式形式：0 = a op b = ? , 1 = ? op b = c , 2 = a op ? = c
                     const blankType = Math.floor(Math.random() * 3);
                     const op = getOperator(mode, allowMulDiv);
 
@@ -343,7 +355,6 @@
                             };
                         }
                     } else if (blankType === 1) {
-                        // ? op b = c
                         let b = rand(100);
                         let c = rand(100);
                         let a = null;
@@ -361,7 +372,6 @@
                             };
                         }
                     } else {
-                        // a op ? = c
                         let a = rand(100);
                         let c = rand(100);
                         let b = null;
@@ -380,7 +390,6 @@
                         }
                     }
                 }
-                // 保底题目
                 return {
                     equationText: `1 + 1 = ?`,
                     answer: 2,
@@ -390,7 +399,6 @@
                 };
             }
 
-            // ---------- 并行填充缓冲区 (每次至少2题待用) ----------
             function refillBuffer() {
                 const allowMulDiv = (mode === 'all');
                 while (questionBuffer.length < 5) {
@@ -398,18 +406,13 @@
                 }
             }
 
-            // ---------- 从缓冲区取出题目，并立即触发后台填充 ----------
             function fetchNextQuestion() {
-                if (questionBuffer.length === 0) {
-                    refillBuffer();
-                }
+                if (questionBuffer.length === 0) refillBuffer();
                 const q = questionBuffer.shift();
-                // 异步填充
                 setTimeout(() => refillBuffer(), 0);
                 return q;
             }
 
-            // ---------- 更新界面到新题目 ----------
             function displayNewQuestion() {
                 if (!isRunning) return;
                 currentQuestion = fetchNextQuestion();
@@ -419,7 +422,6 @@
                 document.getElementById('feedback').innerText = '';
             }
 
-            // ---------- 计时器 ----------
             function startTimer() {
                 if (timerInterval) clearInterval(timerInterval);
                 isRunning = true;
@@ -449,7 +451,6 @@
                 document.getElementById('answer').disabled = true;
             }
 
-            // ---------- 提交答案处理 ----------
             function handleSubmit() {
                 if (!isRunning) {
                     alert('计时已结束或未开始，请点击重置开始练习');
@@ -469,11 +470,9 @@
                 const isCorrect = (userAns === currentQuestion.answer);
                 const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
-                // 更新统计
                 if (isCorrect) correct++;
                 else wrong++;
 
-                // 记录本次练习历史
                 history.push({
                     equation: currentQuestion.display || currentQuestion.equationText,
                     userAnswer: userAns,
@@ -481,14 +480,12 @@
                     timestamp
                 });
 
-                // 如果是错题，加入错题本（去重，保留最近错误）
                 if (!isCorrect) {
                     const wrongEntry = {
                         equation: currentQuestion.display || currentQuestion.equationText,
                         correctAnswer: currentQuestion.answer,
                         lastWrong: timestamp
                     };
-                    // 简单去重：如果相同算式已存在，更新
                     const existingIndex = wrongBank.findIndex(w => w.equation === wrongEntry.equation);
                     if (existingIndex !== -1) wrongBank.splice(existingIndex, 1);
                     wrongBank.unshift(wrongEntry);
@@ -496,21 +493,16 @@
                     saveWrongBank();
                 }
 
-                // 更新UI统计
                 document.getElementById('correctCount').innerText = correct;
                 document.getElementById('wrongCount').innerText = wrong;
                 const total = correct + wrong;
                 document.getElementById('accuracy').innerText = total ? Math.round((correct / total)*100) : 0;
 
-                // 反馈
                 document.getElementById('feedback').innerHTML = isCorrect 
                     ? '✅ 正确！' 
                     : `❌ 错误，正确答案是 ${currentQuestion.answer}`;
 
-                // 渲染历史记录
                 renderHistory();
-
-                // 下一题
                 displayNewQuestion();
             }
 
@@ -545,13 +537,10 @@
                 listDiv.innerHTML = html;
             }
 
-            // ---------- 重置练习 (开始新的一轮) ----------
             function resetPractice() {
-                // 停止计时
                 if (timerInterval) clearInterval(timerInterval);
                 timerInterval = null;
                 isRunning = false;
-                // 重置状态
                 timeLeft = 600;
                 updateTimerDisplay();
                 correct = 0; wrong = 0;
@@ -563,40 +552,26 @@
                 document.getElementById('submitBtn').disabled = false;
                 document.getElementById('answer').disabled = false;
                 
-                // 清空缓冲区，重新预生成
                 questionBuffer = [];
                 refillBuffer();
-                // 显示第一题
                 isRunning = true;
                 displayNewQuestion();
-                // 启动计时
                 startTimer();
             }
 
-            // ---------- 切换模式 ----------
             function setMode(newMode) {
                 mode = newMode;
                 document.getElementById('mode1').classList.toggle('active', mode === 'addsub');
                 document.getElementById('mode2').classList.toggle('active', mode === 'all');
-                // 重置练习以应用新模式
                 resetPractice();
             }
 
-            // ---------- 清空错题本 ----------
             function clearWrongBank() {
                 wrongBank = [];
                 saveWrongBank();
                 renderWrongBank();
             }
 
-            // ---------- 注册Service Worker (PWA) ----------
-            function registerSW() {
-                if ('serviceWorker' in navigator) {
-                    navigator.serviceWorker.register('./sw.js').catch(e => console.log('SW注册失败(可忽略):', e));
-                }
-            }
-
-            // 简单兜底Service Worker (如果不存在则动态创建)
             function installFallbackSW() {
                 if (!('serviceWorker' in navigator)) return;
                 const swScript = `
@@ -608,33 +583,24 @@
                 navigator.serviceWorker.register(url).catch(() => {});
             }
 
-            // ---------- 初始化事件绑定 ----------
             function init() {
                 loadWrongBank();
-                // 预填缓冲区
                 refillBuffer();
-                // 默认激活模式并开始
                 isRunning = true;
                 displayNewQuestion();
                 startTimer();
 
-                // 绑定提交
                 document.getElementById('submitBtn').addEventListener('click', handleSubmit);
                 document.getElementById('answer').addEventListener('keypress', (e) => {
                     if (e.key === 'Enter') handleSubmit();
                 });
 
-                // 模式切换
                 document.getElementById('mode1').addEventListener('click', () => setMode('addsub'));
                 document.getElementById('mode2').addEventListener('click', () => setMode('all'));
 
-                // 重置按钮
                 document.getElementById('resetBtn').addEventListener('click', resetPractice);
-
-                // 清空错题
                 document.getElementById('clearWrongBtn').addEventListener('click', clearWrongBank);
 
-                // PWA：注册Service Worker
                 if ('serviceWorker' in navigator) {
                     installFallbackSW();
                 }
