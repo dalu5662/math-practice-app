@@ -5,21 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title>100以内数学练习 · 四则运算</title>
     
-    <!-- ✅ iOS 专用图标配置（直接调用你的 icons 文件夹） -->
+    <!-- iOS 专用图标配置（直接调用你的 icons 文件夹） -->
     <link rel="apple-touch-icon" href="icons/manifest-icon-192.maskable.png">
     <link rel="apple-touch-icon" sizes="152x152" href="icons/manifest-icon-192.maskable.png">
     <link rel="apple-touch-icon" sizes="180x180" href="icons/manifest-icon-192.maskable.png">
     <link rel="apple-touch-icon" sizes="167x167" href="icons/manifest-icon-192.maskable.png">
     
-    <!-- ✅ iOS 启动画面（可选） -->
+    <!-- iOS 启动画面 -->
     <link rel="apple-touch-startup-image" href="icons/manifest-icon-512.maskable.png">
     
-    <!-- ✅ Safari 顶部栏主题色 -->
+    <!-- Safari 顶部栏主题色 -->
     <meta name="theme-color" content="#4CAF50">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     
-    <!-- ✅ PWA Manifest（已包含你的两个图标） -->
+    <!-- PWA Manifest（已包含你的两个图标） -->
     <link rel="manifest" href="data:application/manifest+json,{
         &quot;name&quot;: &quot;100以内数学练习&quot;,
         &quot;short_name&quot;: &quot;数学练习&quot;,
@@ -44,7 +44,7 @@
     }">
     
     <style>
-        /* ⚠️ 原有 CSS 代码保持不变（你现在的完整样式） */
+        /* ⚠️ 原有 CSS 代码保持不变，只在底部增加 .install-container 样式 */
         * {
             box-sizing: border-box;
             font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
@@ -215,6 +215,33 @@
             -webkit-appearance: none;
             appearance: none;
         }
+        /* ✅ 新增：PWA 安装按钮区域 */
+        .install-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+        #installBtn {
+            background: #1e293b;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 40px;
+            font-weight: 600;
+            cursor: pointer;
+            display: none; /* 默认隐藏，只有可安装时才显示 */
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 0 #0f172a;
+        }
+        #installBtn.show {
+            display: flex;
+        }
+        #installBtn:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #0f172a;
+        }
         @media (max-width: 600px) {
             .app { padding: 16px; }
             .equation { font-size: 2.4rem; }
@@ -252,6 +279,13 @@
             <span>📋 正确率: <span id="accuracy">0</span>%</span>
         </div>
 
+        <!-- ✅ 新增：PWA 安装按钮（仅当浏览器支持时显示） -->
+        <div class="install-container">
+            <button id="installBtn" class="show">
+                ⬇️ 安装应用到电脑
+            </button>
+        </div>
+
         <div style="display:flex; justify-content:space-between; align-items:center;">
             <h3>📝 本次记录</h3>
             <button id="resetBtn" class="clear-btn" style="background:#ef4444;">重置练习</button>
@@ -283,6 +317,10 @@
             let history = [];
             let correct = 0, wrong = 0;
             let wrongBank = [];
+
+            // ---------- PWA 安装相关 ----------
+            let deferredPrompt = null;
+            const installBtn = document.getElementById('installBtn');
 
             // ---------- 加载/保存错题本 ----------
             function loadWrongBank() {
@@ -572,6 +610,44 @@
                 renderWrongBank();
             }
 
+            // ---------- PWA 安装逻辑 ----------
+            function setupPWAInstall() {
+                // 监听 beforeinstallprompt 事件
+                window.addEventListener('beforeinstallprompt', (e) => {
+                    e.preventDefault();
+                    deferredPrompt = e;
+                    // 显示安装按钮
+                    if (installBtn) {
+                        installBtn.classList.add('show');
+                    }
+                });
+
+                // 安装按钮点击事件
+                if (installBtn) {
+                    installBtn.addEventListener('click', async () => {
+                        if (!deferredPrompt) {
+                            alert('应用已安装或当前环境不支持安装');
+                            return;
+                        }
+                        // 显示安装弹窗
+                        deferredPrompt.prompt();
+                        const { outcome } = await deferredPrompt.userChoice;
+                        console.log(`用户安装结果: ${outcome}`);
+                        // 隐藏按钮
+                        deferredPrompt = null;
+                        installBtn.classList.remove('show');
+                    });
+                }
+
+                // 监听应用安装完成
+                window.addEventListener('appinstalled', () => {
+                    console.log('PWA 安装成功');
+                    deferredPrompt = null;
+                    installBtn.classList.remove('show');
+                });
+            }
+
+            // ---------- Service Worker ----------
             function installFallbackSW() {
                 if (!('serviceWorker' in navigator)) return;
                 const swScript = `
@@ -600,6 +676,9 @@
 
                 document.getElementById('resetBtn').addEventListener('click', resetPractice);
                 document.getElementById('clearWrongBtn').addEventListener('click', clearWrongBank);
+
+                // PWA 安装监听
+                setupPWAInstall();
 
                 if ('serviceWorker' in navigator) {
                     installFallbackSW();
